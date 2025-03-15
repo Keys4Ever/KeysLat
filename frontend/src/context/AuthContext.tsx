@@ -1,7 +1,7 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { AuthContextType } from "../shared/interfaces/Auth";
 import { User } from "../shared/interfaces/User";
-
+import { FormData } from "../shared/interfaces/Auth";
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const config = {
@@ -75,7 +75,59 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const login = async (credentials?: { email: string; password: string }) => {
+  const register = async (formData: { username: string; email: string; password: string }) => {
+    try {
+      setLoading(true);
+
+      if (config.useSimulation) {
+        await new Promise(resolve => setTimeout(resolve, config.simulationDelay));
+
+        if (Math.random() > 0.1) {
+          setAuth({
+            authenticated: true,
+            data: mockUser
+          });
+          setAuthenticated(true);
+          return { success: true };
+        } else {
+          throw new Error("Registration failed");
+        }
+      } else {
+        const response = await fetch(`${config.apiBaseUrl}/auth/register`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          throw new Error(`Registration failed: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.authenticated) {
+          setAuth({ authenticated: true, data: data.user });
+          setAuthenticated(true);
+          return { success: true };
+        } else {
+          throw new Error(data.message || "Registration failed");
+        }
+      }
+    } catch (err) {
+      console.error("Registration error:", err);
+      return { 
+        success: false, 
+        error: err instanceof Error ? err.message : "Unknown error" 
+      };
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const login = async (formData: FormData) => {
     try {
       setLoading(true);
       
@@ -98,7 +150,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(credentials),
+          body: JSON.stringify(formData),
           credentials: 'include'
         });
         
@@ -172,6 +224,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isAuthenticated,
     login,
     logout,
+    register,
     refreshAuth: fetchAuthStatus
   };
 
