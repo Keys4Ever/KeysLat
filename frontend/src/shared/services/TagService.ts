@@ -24,3 +24,14 @@ const deleteTag = async (id: string) => {
 const addTagToUrl = async (tagId: string, urlId: string) => {
     return httpClient.post(`/tags/${tagId}/urls/${urlId}`)
 }
+
+const TagService = {
+    createTag,
+    getTags,
+    getTag,
+    updateTag,
+    deleteTag,
+    addTagToUrl
+}
+
+export default TagService;

@@ -5,6 +5,7 @@ import { Register } from '../auth/register/Register';
 import { PageNotFound } from '../404/404';
 import Layout from '../layout/Layout';
 import ShortUrl from './ShortUrl';
+import { HomePage } from '../home/HomePage';
 /*import Layout from '../Layout';
 import { Navigate } from 'react-router-dom';
 import MainPage from '../pages/MainPage';
@@ -30,7 +31,8 @@ const AppRoutes = () => {
                     {/* Not found route */}
                     <Route path="/404" element={<PageNotFound />} />
 
-
+                    {/* Home page */}
+                    <Route path='/' element={<HomePage />} />
                 </Routes>
             </Layout>
             
