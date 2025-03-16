@@ -1,178 +1,74 @@
-import { createContext, ReactNode, useContext, useEffect, useState } from "react";
-import { AuthContextType } from "../shared/interfaces/Auth";
-import { User } from "../shared/interfaces/User";
-import { FormData } from "../shared/interfaces/Auth";
+// src/context/AuthContext.tsx
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { AuthContextType, FormData } from '../shared/interfaces/Auth';
+import { DecodedToken } from '../shared/interfaces/Token';
+import { User, UserData } from '../shared/interfaces/User';
+import { jwtDecode } from 'jwt-decode';
+import httpClient, { checkTokenExpiration, decodeToken, setAuthToken } from '../shared/utils/httpClient';
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-const config = {
-  useSimulation: true,
-  apiBaseUrl: "/api",
-  simulationDelay: 800,
-};
-
-const mockUser = {
-  user_id: "usr_123456",
-  username: "John Doe",
-  email: "john.doe@example.com",
-  profile_picture: "https://i.imgur.com/wquxgOM.jpeg"
-};
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [auth, setAuth] = useState<User>({ authenticated: false, data: null });
-  const [loading, setLoading] = useState<boolean>(true);
-  const [isAuthenticated, setAuthenticated] = useState<boolean>(false);
+  const [loading, setLoading] = useState(true);
 
-  const fetchAuthStatus = async () => {
-    try {
-      let response;
-      
-      if (config.useSimulation) {
-        await new Promise(resolve => setTimeout(resolve, config.simulationDelay));
+  useEffect(() => {
+    const initializeAuth = async () => {
+      try {
+        const tokenValid = checkTokenExpiration();
         
-        const simulateSuccess = Math.random() > 0.2;
-        
-        if (simulateSuccess) {
-          response = {
-            authenticated: true,
-            user: mockUser
-          };
-        } else {
-          response = {
-            authenticated: false,
-            user: null
-          };
+        if (tokenValid) {
+          const token = localStorage.getItem('authToken');
+          if (token) {
+            const decoded = decodeToken(token);
+            const response = await httpClient.get<UserData>(`/users/${decoded.user_id}`);
+            
+            setAuth({
+              authenticated: true,
+              data: {
+                user_id: decoded.user_id,
+                email: response.data.email,
+                username: response.data.username,
+                profile_picture: response.data.profile_picture
+              }
+            });
+          }
         }
-      } else {
-        const apiResponse = await fetch(`${config.apiBaseUrl}/auth/status`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          credentials: 'include'
-        });
-        
-        if (!apiResponse.ok) {
-          throw new Error(`API error: ${apiResponse.status}`);
-        }
-        
-        response = await apiResponse.json();
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+        localStorage.removeItem('authToken');
+      } finally {
+        setLoading(false);
       }
+    };
 
-      if (response.authenticated) {
-        setAuth({ authenticated: true, data: response.user });
-        setAuthenticated(true);
-      } else {
-        setAuth({ authenticated: false, data: null });
-        setAuthenticated(false);
-      }
-    } catch (err) {
-      console.error("Authentication status error:", err);
-      setAuth({ authenticated: false, data: null });
-      setAuthenticated(false);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const register = async (formData: { username: string; email: string; password: string }) => {
-    try {
-      setLoading(true);
-
-      if (config.useSimulation) {
-        await new Promise(resolve => setTimeout(resolve, config.simulationDelay));
-
-        if (Math.random() > 0.1) {
-          setAuth({
-            authenticated: true,
-            data: mockUser
-          });
-          setAuthenticated(true);
-          return { success: true };
-        } else {
-          throw new Error("Registration failed");
-        }
-      } else {
-        const response = await fetch(`${config.apiBaseUrl}/auth/register`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-          credentials: 'include'
-        });
-
-        if (!response.ok) {
-          throw new Error(`Registration failed: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        if (data.authenticated) {
-          setAuth({ authenticated: true, data: data.user });
-          setAuthenticated(true);
-          return { success: true };
-        } else {
-          throw new Error(data.message || "Registration failed");
-        }
-      }
-    } catch (err) {
-      console.error("Registration error:", err);
-      return { 
-        success: false, 
-        error: err instanceof Error ? err.message : "Unknown error" 
-      };
-    } finally {
-      setLoading(false);
-    }
-  }
+    initializeAuth();
+  }, []);
 
   const login = async (formData: FormData) => {
     try {
       setLoading(true);
-      
-      if (config.useSimulation) {
-        await new Promise(resolve => setTimeout(resolve, config.simulationDelay));
-        
-        if (Math.random() > 0.1) {
-          setAuth({
-            authenticated: true,
-            data: mockUser
-          });
-          setAuthenticated(true);
-          return { success: true };
-        } else {
-          throw new Error("Invalid credentials");
-        }
-      } else {
-        const response = await fetch(`${config.apiBaseUrl}/auth/login`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-          credentials: 'include'
+      const response = await httpClient.post<{ token: string; user: UserData }>('/auth/login', formData);
+
+      if (response.data.token) {
+        setAuthToken(response.data.token);
+        const decoded = jwtDecode<DecodedToken>(response.data.token);
+
+        setAuth({
+          authenticated: true,
+          data: {
+            user_id: decoded.user_id,
+            email: response.data.user.email,
+            username: response.data.user.username,
+            profile_picture: response.data.user.profile_picture
+          }
         });
-        
-        if (!response.ok) {
-          throw new Error(`Login failed: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        if (data.authenticated) {
-          setAuth({ authenticated: true, data: data.user });
-          setAuthenticated(true);
-          return { success: true };
-        } else {
-          throw new Error(data.message || "Login failed");
-        }
       }
-    } catch (err) {
-      console.error("Login error:", err);
-      return { 
-        success: false, 
-        error: err instanceof Error ? err.message : "Unknown error" 
+      return { success: true };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Error de autenticación'
       };
     } finally {
       setLoading(false);
@@ -182,65 +78,88 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     try {
       setLoading(true);
-      
-      if (config.useSimulation) {
-        await new Promise(resolve => setTimeout(resolve, config.simulationDelay));
-        
-        setAuth({ authenticated: false, data: null });
-        setAuthenticated(false);
-        return { success: true };
-      } else {
-        const response = await fetch(`${config.apiBaseUrl}/auth/logout`, {
-          method: 'POST',
-          credentials: 'include'
+      await httpClient.post('/auth/logout');
+    } finally {
+      localStorage.removeItem('authToken');
+      setAuth({ authenticated: false, data: null });
+      setLoading(false);
+    }
+  };
+
+  const register = async (formData: FormData) => {
+    try {
+      setLoading(true);
+      const response = await httpClient.post<{ token: string; user: UserData }>('/auth/register', formData);
+
+      if (response.data.token) {
+        setAuthToken(response.data.token);
+        const decoded = jwtDecode<DecodedToken>(response.data.token);
+
+        setAuth({
+          authenticated: true,
+          data: {
+            user_id: decoded.user_id,
+            email: response.data.user.email,
+            username: response.data.user.username,
+            profile_picture: response.data.user.profile_picture
+          }
         });
-        
-        if (!response.ok) {
-          throw new Error(`Logout failed: ${response.status}`);
-        }
-        
-        setAuth({ authenticated: false, data: null });
-        setAuthenticated(false);
-        return { success: true };
       }
-    } catch (err) {
-      console.error("Logout error:", err);
-      return { 
-        success: false, 
-        error: err instanceof Error ? err.message : "Unknown error" 
+      return { success: true };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Error de registro'
       };
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchAuthStatus();
-  }, []);
+  const refreshAuth = async () => {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (token && checkTokenExpiration()) {
+        const response = await httpClient.get<UserData>('/auth/refresh');
+        const decoded = jwtDecode<DecodedToken>(token);
 
-  const contextValue: AuthContextType = {
+        setAuth({
+          authenticated: true,
+          data: {
+            user_id: decoded.user_id,
+            email: response.data.email,
+            username: response.data.username,
+            profile_picture: response.data.profile_picture
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error refreshing auth:', error);
+      logout();
+    }
+  };
+
+  const value = {
     auth,
     loading,
-    isAuthenticated,
     login,
     logout,
     register,
-    refreshAuth: fetchAuthStatus
+    refreshAuth,
+    isAuthenticated: auth.authenticated
   };
 
   return (
-    <AuthContext.Provider value={contextValue}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = (): AuthContextType => {
+export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+  if (!context) {
+    throw new Error('useAuth debe usarse dentro de un AuthProvider');
   }
   return context;
 };
-
-export default AuthProvider;

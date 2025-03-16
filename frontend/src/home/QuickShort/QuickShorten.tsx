@@ -3,11 +3,13 @@ import { useAuth } from '../../context/AuthContext';
 import UrlInputForm from './components/UrlInputForm';
 import { ShortUrlDisplay } from './components/ShortUrlDisplay';
 import SecretKeyDisplay from './components/SecretKeyDisplay';
+import secretService from '../../shared/services/QuickShort';
+import UrlService from '../../shared/services/UrlService';
 
 const QuickShorten = () => {
   const { auth, loading } = useAuth();
   const [shortUrl, setShortUrl] = useState('');
-  const [secretKey, setSecretKey] = useState(null);
+  const [secretKey, setSecretKey] = useState<string>('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -15,26 +17,30 @@ const QuickShorten = () => {
     setError('');
     setShortUrl('');
     setIsLoading(true);
-
+  
     try {
       const userId = auth.authenticated ? auth.data?.user_id : null;
-      const response = userId
-       // ? await createShortUrl(userId, url)
-       // : await quickShort(url); 
-       // Implement those methods
-      console.log(response);
-      if (!response.success && !auth.authenticated) throw new Error(response.error || 'Error shortening URL');
-
-      const generatedShortUrl = `keys.lat/${ response.url }`;
-      setShortUrl(generatedShortUrl);
-
-      if (!auth.authenticated) {
-        setSecretKey(response.secretKey);
+      const response = userId ? await UrlService.createShortUrl(url) : await secretService.quickShort(url);
+  
+      console.log(response.data);
+  
+      if (!response.data?.success && !auth.authenticated) {
+        throw new Error(response.data?.error || 'Error shortening URL');
       }
-
+  
+      const generatedShortUrl = `keys.lat/${response.data.shortUrl}`;
+      setShortUrl(generatedShortUrl);
+  
+      if (!auth.authenticated) {
+        if ('secretKey' in response.data) {
+          setSecretKey(response.data.secretKey);
+        }
+      }
+  
       await navigator.clipboard.writeText(generatedShortUrl);
     } catch (err: any) {
-      setError(err.message);
+      const errorMessage = err.response?.data?.error || err.message;
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

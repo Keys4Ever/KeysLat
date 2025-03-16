@@ -1,4 +1,4 @@
-import { User } from "./User";
+import { User, UserData } from "./User";
 
 export interface AuthContextType {
     auth: User;
@@ -14,4 +14,9 @@ export interface FormData {
     username: string;
     email: string;
     password: string;
+}
+
+export interface AuthResponse {
+    token: string;
+    user: UserData;
 }
