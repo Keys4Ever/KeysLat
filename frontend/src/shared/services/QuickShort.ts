@@ -6,13 +6,24 @@ interface QuickShortResponse extends ApiResponse {
   secretKey: string;
 }
 
+export interface addSecretToUserResponse extends ApiResponse {
+  newUrl: {
+    urlId: number;
+    shortUrl: string;
+    originalUrl: string;
+    clicks: number;
+    date: string;
+  };
+}
+
+
 
 const quickShort = (url: string) => {
   return httpClient.post<QuickShortResponse>("/url/quick-short", { url });
 }
 
-const addSecretToUser = async (userId: string, secretKey: string) => {
-  return httpClient.post<ApiResponse>("/user/add-secret", { userId, secretKey });
+const addSecretToUser = async (secretKey: string) => {
+  return httpClient.post<addSecretToUserResponse>("/user/add-secret", { secretKey });
 }
 
 const secretService = {

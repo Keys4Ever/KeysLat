@@ -1,15 +1,19 @@
 import { ApiResponse } from "../interfaces/Response";
+import { Tag } from "../interfaces/Tag";
 import httpClient from "../utils/httpClient";
 
 export interface Url {
     id: number;
     shortUrl: string;
     originalUrl: string;
-    tags: number[];
+    tags: Tag[];
     description: string;
+    clics: number;
+    created_at: string;
 }
 
 interface CreateShortUrlResponse extends ApiResponse {
+    id: number;
     shortUrl: string;
     originalUrl: string;
     tags: number[];
@@ -29,12 +33,14 @@ interface DeleteUrlResponse extends ApiResponse {
 }
 
 const createShortUrl = async (
-    url: string,
+    shortUrl: string,
+    longUrl: string,
     tags?: number[],
     description?: string
 ): Promise<CreateShortUrlResponse> => {
     const response = await httpClient.post<CreateShortUrlResponse>("/url/create", {
-        url,
+        shortUrl,
+        longUrl,
         tags,
         description,
     });
@@ -63,12 +69,14 @@ const deleteUrl = async (urlId: number): Promise<DeleteUrlResponse> => {
 
 const updateUrl = async (
     urlId: number,
-    newUrl: string,
+    newShortUrl: string,
+    newLongUrl: string,
     newTags: number[],
     newDescription: string
 ): Promise<GetUrlResponse> => {
     const response = await httpClient.put<GetUrlResponse>(`/url/${urlId}`, {
-        newUrl,
+        newShortUrl,
+        newLongUrl,
         newTags,
         newDescription,
     });

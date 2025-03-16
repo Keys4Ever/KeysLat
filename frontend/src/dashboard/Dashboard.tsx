@@ -1,26 +1,35 @@
 import { useEffect } from "react";
 import { useAuth } from "../context/AuthContext"
 import { useNavigate } from "react-router-dom";
-import useTags from "../hooks/useTags";
-import { useUrls } from "../hooks/useUrls";
 import UrlCardSkeleton from "./skeletons/UrlCardSkeleton";
+import useTagStore from "../store/useTagsStore";
+import useUrlStore from "../store/useUrlStore";
 
 export const Dashboard = () => {
     
     const { auth, loading } = useAuth();
     const navigate = useNavigate();
-    const { tags, loading: loadingTags } = useTags();
-    const { urls, loading: loadingUrls } = useUrls();
+
+    const { loading: loadingTags, fetchTags } = useTagStore();
+    const { loading: loadingUrls, fetchUrls } = useUrlStore();
 
     useEffect(() => {
-        if(!loading) return;
+        if(loading) return;
 
         if(!auth.authenticated){
             navigate('/login')
         }
-
     }, [loading, auth.authenticated])
 
+    // Fetch Initial Data
+
+    useEffect(() => {
+        if(loadingTags) return;
+        if(loadingUrls) return;
+        fetchTags();
+        fetchUrls();
+    }, [loadingTags, loadingUrls]);
+    
     return (
         <div className="min-h-screen bg-black text-white">
             <div className="max-w-[900px] mx-auto">
