@@ -9,8 +9,8 @@ import TagSkeleton from "../skeletons/TagSkeleton.js";
 
 interface Props{
     setShowUrlForm: React.Dispatch<React.SetStateAction<boolean>>;
-    edit: boolean;
-    item: Url | null;
+    edit?: boolean;
+    item?: Url | null;
 
 }
 
