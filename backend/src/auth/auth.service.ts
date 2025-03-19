@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from 'src/dto/user.dto';
 import { AuthResponse } from 'src/shared/interfaces/auth.interfaces';
 import { LoginDto } from 'src/shared/schemas/register.schema';
-import { UsersService } from '../user/user.service';
+import { UsersService } from '../users/users.service';
 import { AuthProvider } from 'src/entities/user.entity';
 
 @Injectable()
@@ -22,7 +22,7 @@ export class AuthService {
       }
   
       const user = await this.usersService.create(registerDto);
-      const payload = { username: user.username, sub: user.id };
+      const payload = { username: user.username, sub: user.user_id };
       const access_token = this.jwtService.sign(payload);
   
       return {
@@ -31,7 +31,7 @@ export class AuthService {
         data: {
           access_token,
           user: {
-            user_id: user.id,
+            user_id: user.user_id,
             username: user.username,
             email: user.email,
             profile_picture: user.profile_picture
@@ -43,13 +43,13 @@ export class AuthService {
     async validateUser(username: string, password: string): Promise<any> {
       const user = await this.usersService.findOne(username);
       if (user && await user.validatePassword(password)) {
-        return { id: user.id, username: user.username };
+        return { id: user.user_id , username: user.username };
       }
       return null;
     }
   
     async validateGithubUser(profile: { githubId: string; username: string; email?: string }) {
-      let user = await this.usersService.findByGithubId(profile.githubId);
+      let user = await this.usersService.findByProviderId(profile.githubId);
       
       if (!user) {
         user = await this.usersService.createGithubUser({
@@ -59,7 +59,7 @@ export class AuthService {
         });
       }
 
-      const payload = { username: user.username, sub: user.id };
+      const payload = { username: user.username, sub: user.user_id };
       const access_token = this.jwtService.sign(payload);
 
       return {
@@ -68,7 +68,7 @@ export class AuthService {
         data: {
           access_token,
           user: {
-            user_id: user.id,
+            user_id: user.user_id,
             username: user.username,
             email: user.email,
             profile_picture: user.profile_picture
@@ -138,7 +138,7 @@ export class AuthService {
           profile_picture: userData.profilePicture,
         };
         
-        user = await this.usersService.create(newUser);
+        user = await this.usersService.create(newUser as CreateUserDto);
       }
       
       const token = this.generateToken(user);

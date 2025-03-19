@@ -1,4 +1,5 @@
 import { IsNotEmpty, IsEmail, IsOptional, IsString } from 'class-validator';
+import { AuthProvider } from 'src/entities/user.entity';
 
 export class CreateUserDto {
   @IsNotEmpty()
@@ -8,6 +9,14 @@ export class CreateUserDto {
   @IsNotEmpty()
   @IsEmail()
   email: string;
+
+  @IsOptional()
+  @IsString()
+  provider_id: string;
+
+  @IsOptional()
+  @IsString()
+  auth_provider: AuthProvider;
 
   @IsOptional() // because of github auth
   @IsString()
@@ -31,11 +40,17 @@ export class UpdateUserDto {
     @IsString()
     username?: string;
 
-    
     @IsOptional()
     @IsString()
-    password: string;
-
+    provider_id?: string; 
+  
+    @IsOptional()
+    @IsString()
+    auth_provider?: AuthProvider; 
+  
+    @IsOptional()
+    @IsString()
+    password?: string;
   
     @IsOptional()
     @IsString()

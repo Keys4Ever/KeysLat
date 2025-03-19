@@ -2,7 +2,8 @@ import { Controller, Post, Body, UseGuards, Get, UnauthorizedException, Req, Hea
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthResponse } from '../shared/interfaces/auth.interfaces';
-import { registerSchema, loginSchema } from '../shared/schemas/auth.schema';
+import { loginSchema, registerSchema } from 'src/shared/schemas/register.schema';
+import { CreateUserDto } from 'src/dto/user.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -14,7 +15,7 @@ export class AuthController {
     if (!result.success) {
       throw new UnauthorizedException(result.error.errors[0].message);
     }
-    return await this.authService.register(result.data);
+    return await this.authService.register(result.data as CreateUserDto);
   }
 
   @Post('login')
