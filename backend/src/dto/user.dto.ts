@@ -9,6 +9,10 @@ export class CreateUserDto {
   @IsEmail()
   email: string;
 
+  @IsOptional() // because of github auth
+  @IsString()
+  password: string;
+
   @IsOptional()
   @IsString()
   username?: string;
@@ -26,9 +30,14 @@ export class UpdateUserDto {
     @IsOptional()
     @IsString()
     username?: string;
+
+    
+    @IsOptional()
+    @IsString()
+    password: string;
+
   
     @IsOptional()
     @IsString()
     profile_picture?: string;
 }
-
