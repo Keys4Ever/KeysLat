@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-github2';
 import { AuthService } from './auth.service';
-import { AuthProvider } from './auth-provider.enum';
+import { AuthProvider } from 'src/entities/user.entity';
 
 @Injectable()
 export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
@@ -17,7 +17,6 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
 
   async validate(accessToken: string, refreshToken: string, profile: any, done: Function) {
     try {
-      // Utiliza los métodos existentes del servicio de autenticación
       const user = await this.authService.findOrCreateProviderUser({
         providerId: profile.id,
         provider: AuthProvider.GITHUB,
