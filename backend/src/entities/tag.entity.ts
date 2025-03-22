@@ -11,7 +11,7 @@ export class Tag {
   name: string;
 
   @Column('text', { nullable: true })
-  description?: string;
+  description: string;
 
   @Column()
   user_id: string;

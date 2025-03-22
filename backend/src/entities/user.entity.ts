@@ -22,13 +22,13 @@ export class User {
   password: string;
 
   @Column({ nullable: true })
-  username?: string;
+  username: string;
 
   @Column({ nullable: true })
-  profile_picture?: string;
+  profile_picture: string;
   
   @Column({ nullable: true, unique: true })
-  provider_id?: string;
+  provider_id: string;
   
   @Column({
     type: 'enum',
