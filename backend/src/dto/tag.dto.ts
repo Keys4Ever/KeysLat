@@ -22,4 +22,16 @@ export class UpdateTagDto {
     @IsOptional()
     @IsString()
     description?: string;
+
+    @IsNotEmpty()
+    @IsString()
+    user_id: string;
+
+    @IsOptional()
+    @IsString()
+    new_name: string;
+
+    @IsOptional()
+    @IsString()
+    new_description: string;
 }

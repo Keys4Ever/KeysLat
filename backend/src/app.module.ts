@@ -7,6 +7,8 @@ import { UsersModule } from './users/users.module';
 import { UrlController } from './url/url.controller';
 import { UrlService } from './url/url.service';
 import { UrlModule } from './url/url.module';
+import { TagsService } from './tags/tags.service';
+import { TagsModule } from './tags/tags.module';
 
 @Module({
   imports: [
@@ -19,8 +21,9 @@ import { UrlModule } from './url/url.module';
     AuthModule,
     UsersModule,
     UrlModule,
+    TagsModule,
   ],
   controllers: [UrlController],
-  providers: [UrlService],
+  providers: [UrlService, TagsService],
 })
 export class AppModule {}
