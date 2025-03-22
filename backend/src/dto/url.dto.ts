@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { IsArray, isNotEmpty, IsNotEmpty, IsOptional, IsString } from "class-validator";
 
 export class CreateUrlDto {
     @IsNotEmpty()
@@ -11,11 +11,15 @@ export class CreateUrlDto {
   
     @IsOptional()
     @IsString()
-    short_url?: string;
+    short_url: string;
   
     @IsOptional()
     @IsString()
-    description?: string;
+    description: string;
+
+    @IsOptional()
+    @IsArray()
+    url_tags: number[];
 }
 
 export class UpdateUrlDto {
@@ -29,13 +33,18 @@ export class UpdateUrlDto {
   
     @IsOptional()
     @IsString()
-    new_short_url?: string;
+    new_short_url: string;
   
     @IsOptional()
     @IsString()
-    new_original_url?: string;
+    new_original_url: string;
   
     @IsOptional()
     @IsString()
-    description?: string;
+    description: string;
+
+    @IsOptional()
+    @IsArray()
+    tags: number[];
+
 }
