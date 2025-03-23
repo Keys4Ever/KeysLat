@@ -64,11 +64,9 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
-  async delete(userId: string): Promise<void> {
-    const result = await this.usersRepository.delete(userId);
-    if (result.affected === 0) {
-      throw new NotFoundException('User not found');
-    }
+  async delete(userId: string): Promise<boolean> {
+    const result = await this.usersRepository.delete({ user_id: userId });
+    return result.affected > 0;
   }
 
   async findAll(): Promise<User[]> {
