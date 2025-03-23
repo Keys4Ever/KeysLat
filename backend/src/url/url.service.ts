@@ -4,6 +4,7 @@ import { CreateUrlDto } from 'src/dto/url.dto';
 import { Tag } from 'src/entities/tag.entity';
 import { Url } from 'src/entities/url.entity';
 import { In, Repository } from 'typeorm';
+import * as Randomstring from 'randomstring';
 
 @Injectable()
 export class UrlService {
@@ -13,7 +14,6 @@ export class UrlService {
         @InjectRepository(Tag)
         private readonly tagRepository: Repository<Tag>,
     ) {}
-
 
     async getOne(id: number): Promise<Url | undefined> {
         return this.urlRepository.findOne({ where: { id } });
@@ -36,13 +36,12 @@ export class UrlService {
         }
     
         let tags: Tag[] = [];
-        // Maybe a for cicle and log the tags that doesnt exist ??
         if (urlDto.url_tags && urlDto.url_tags.length > 0) {
           tags = await this.tagRepository.find({
             where: { id: In(urlDto.url_tags) },
           });
           if (tags.length !== urlDto.url_tags.length) {
-            throw new BadRequestException('Algunos tags no existen');
+            throw new BadRequestException('Some tags do not exist');
           }
         }
     
@@ -55,22 +54,42 @@ export class UrlService {
         });
     
         return this.urlRepository.save(newUrl);
-      }
+    }
 
-    async delete(id: number): Promise<void> {
-        await this.urlRepository.delete({ id });
+    async delete(id: number): Promise<boolean> {
+        const result = await this.urlRepository.delete({ id });
+        return result.affected > 0;
     }
 
     async update(id: number, updateData: Partial<Url>): Promise<Url> {
-        await this.urlRepository.update(id, updateData);
-        return this.urlRepository.findOne({ where: { id } });
+        const url = await this.urlRepository.findOne({ where: { id } });
+        if (!url) {
+            throw new BadRequestException('URL not found');
+        }
+
+        if (updateData.original_url) {
+            url.original_url = updateData.original_url;
+        }
+        if (updateData.short_url) {
+            if (await this.alreadyExists(updateData.short_url)) {
+                throw new BadRequestException('Short URL already exists');
+            }
+            url.short_url = updateData.short_url;
+        }
+        if (updateData.description !== undefined) {
+            url.description = updateData.description;
+        }
+        if (updateData.tags) {
+            url.tags = updateData.tags;
+        }
+
+        return this.urlRepository.save(url);
     }
 
     async getOnlyOriginalUrl(short_url: string): Promise<string | undefined> {
         await this.urlRepository.update({ short_url }, { stats: { clicks: () => 'clicks + 1' } });
-
-        const { original_url } = await this.urlRepository.findOne({ where: { short_url } });
-        return original_url;
+        const url = await this.urlRepository.findOne({ where: { short_url } });
+        return url?.original_url;
     }
 
     generateShortUrl(): string {

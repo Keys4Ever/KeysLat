@@ -9,6 +9,7 @@ import { UrlService } from './url/url.service';
 import { UrlModule } from './url/url.module';
 import { TagsService } from './tags/tags.service';
 import { TagsModule } from './tags/tags.module';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { TagsModule } from './tags/tags.module';
     UsersModule,
     UrlModule,
     TagsModule,
+    RedisModule,
   ],
   controllers: [UrlController],
   providers: [UrlService, TagsService],

@@ -41,10 +41,17 @@ export class UpdateUrlDto {
   
     @IsOptional()
     @IsString()
+    new_description: string;
+
+    @IsOptional()
+    @IsString()
     description: string;
 
     @IsOptional()
     @IsArray()
     tags: number[];
 
+    @IsOptional()
+    @IsArray()
+    new_tags: number[];
 }

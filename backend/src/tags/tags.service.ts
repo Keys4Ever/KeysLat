@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CreateTagDto, UpdateTagDto } from 'src/dto/tag.dto';
 import { Tag } from 'src/entities/tag.entity';
 import { Url } from 'src/entities/url.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 
 @Injectable()
 export class TagsService {
@@ -24,6 +24,12 @@ export class TagsService {
             where: {
                 user_id: user_id
             }
+        });
+    }
+
+    async findByIds(ids: number[]): Promise<Tag[]> {
+        return await this.tagRepository.find({
+            where: { id: In(ids) }
         });
     }
 
