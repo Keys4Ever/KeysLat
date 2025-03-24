@@ -5,6 +5,7 @@ import { Tag } from 'src/entities/tag.entity';
 import { Url } from 'src/entities/url.entity';
 import { In, Repository } from 'typeorm';
 import * as Randomstring from 'randomstring';
+import { StatsService } from 'src/stats/stats.service';
 
 @Injectable()
 export class UrlService {
@@ -13,6 +14,8 @@ export class UrlService {
         private readonly urlRepository: Repository<Url>,
         @InjectRepository(Tag)
         private readonly tagRepository: Repository<Tag>,
+        @InjectRepository(StatsService)
+        private readonly statsService: StatsService
     ) {}
 
     async getOne(id: number): Promise<Url | undefined> {
@@ -34,26 +37,30 @@ export class UrlService {
             urlDto.short_url = short_url;
           } while (await this.alreadyExists(urlDto.short_url));
         }
-    
+        
+        
         let tags: Tag[] = [];
         if (urlDto.url_tags && urlDto.url_tags.length > 0) {
-          tags = await this.tagRepository.find({
-            where: { id: In(urlDto.url_tags) },
-          });
-          if (tags.length !== urlDto.url_tags.length) {
-            throw new BadRequestException('Some tags do not exist');
-          }
+            tags = await this.tagRepository.find({
+                where: { id: In(urlDto.url_tags) },
+            });
+            if (tags.length !== urlDto.url_tags.length) {
+                throw new BadRequestException('Some tags do not exist');
+            }
         }
-    
+        
         const newUrl = this.urlRepository.create({
-          user_id: urlDto.user_id,
-          original_url: urlDto.original_url,
-          short_url: urlDto.short_url,
-          description: urlDto.description,
-          tags,
+            user_id: urlDto.user_id,
+            original_url: urlDto.original_url,
+            short_url: urlDto.short_url,
+            description: urlDto.description,
+            tags,
         });
-    
-        return this.urlRepository.save(newUrl);
+        
+        return this.urlRepository.save(newUrl).then(async (url) => {
+            this.statsService.createStats(url.id)
+            return url;
+        });
     }
 
     async delete(id: number): Promise<boolean> {
@@ -92,12 +99,18 @@ export class UrlService {
         return url?.original_url;
     }
 
-    generateShortUrl(): string {
+    private generateShortUrl(): string {
         return Randomstring.generate({ length: 6, charset: 'alphanumeric' });   
+    }
+
+    async getOnlyId(short_url: string): Promise<number | undefined> {
+        const url = await this.urlRepository.findOne({ where: { short_url } });
+        return url?.id;
     }
 
     private async alreadyExists(short_url: string): Promise<boolean> {
         const url = await this.urlRepository.findOne({ where: { short_url } });
         return !!url;
     }
+
 }

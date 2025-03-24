@@ -6,13 +6,17 @@ import { TagsService } from 'src/tags/tags.service';
 import { RedisService } from 'src/redis/redis.service';
 import { ApiResponse } from 'src/shared/interfaces/api.interface';
 import { correctResponse, incorrectResponse } from 'src/utils/buildResponse';
+import { StatsService } from 'src/stats/stats.service';
+import { QuickUrlService } from 'src/quick-url/quick-url.service';
 
 @Controller('url')
 export class UrlController {
     constructor(
         private readonly urlService: UrlService,
         private readonly tagsService: TagsService,
-        private readonly redisService: RedisService
+        private readonly redisService: RedisService,
+        private readonly statsService: StatsService,
+        private readonly quickUrlService: QuickUrlService
     ) {}
 
     @Post('/create')
@@ -84,6 +88,21 @@ export class UrlController {
             await this.redisService.setUrl(shortUrl, original_url, 999999);
         }
 
+        const urlId = await this.urlService.getOnlyId(shortUrl);
+        
+        await this.statsService.updateClicks(urlId);
+
         return correctResponse('URL found', original_url);
     }
+
+    @Post('quick-short')
+    async createQuickShort(@Body('longUrl') longUrl: string): Promise<ApiResponse<{ shortUrl: string; secretKey: string }>> {
+      try {
+        const result = await this.quickUrlService.createQuickUrl(longUrl);
+        return result;
+      } catch (error) {
+        return incorrectResponse('Error creating quick URL');
+      }
+    }
 }
+

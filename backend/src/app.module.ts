@@ -10,6 +10,10 @@ import { UrlModule } from './url/url.module';
 import { TagsService } from './tags/tags.service';
 import { TagsModule } from './tags/tags.module';
 import { RedisModule } from './redis/redis.module';
+import { StatsModule } from './stats/stats.module';
+import { QuickUrlModule } from './quick-url/quick-url.module';
+import { QuickUrlService } from './quick-url/quick-url.service';
+import { QuickUrlModule } from './quick-url/quick-url.module';
 
 @Module({
   imports: [
@@ -24,8 +28,10 @@ import { RedisModule } from './redis/redis.module';
     UrlModule,
     TagsModule,
     RedisModule,
+    StatsModule,
+    QuickUrlModule,
   ],
   controllers: [UrlController],
-  providers: [UrlService, TagsService],
+  providers: [UrlService, TagsService, QuickUrlService],
 })
 export class AppModule {}
