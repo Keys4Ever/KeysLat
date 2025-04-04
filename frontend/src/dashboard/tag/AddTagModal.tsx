@@ -1,7 +1,6 @@
 import { X } from "lucide-react";
 import { useState, FormEvent } from "react";
 import { Tag } from "../../shared/interfaces/Tag";
-import TagService from "../../shared/services/TagService";
 import useTagStore from "../../store/useTagsStore";
 
 interface Props {
@@ -13,7 +12,7 @@ interface Props {
 const AddTagModal = ({ setShowAddForm, tag, edit }: Props) => {
     const [isLoading, setIsLoading] = useState(false);
     const { addTag, updateTag } = useTagStore();
-    
+
     const [tagNew, setTagNew] = useState<Tag>({
         id: tag?.id || 0,
         name: tag?.name || '',
@@ -37,25 +36,13 @@ const AddTagModal = ({ setShowAddForm, tag, edit }: Props) => {
 
         try {
             if (edit) {
-                const response = await TagService.updateTag(tagNew.id, tagNew);
-                if (response.success) {
-                    updateTag(tagNew.id, tagNew);
-                    alert("Tag updated successfully :D");
-                    setShowAddForm(false);
-                } else {
-                    alert("Error updating tag. Please try again.");
-                }
+                await updateTag(tagNew.id, tagNew);
+                alert("Tag updated successfully :D");
             } else {
-                const response = await TagService.createTag(tagNew);
-                if (response.success) {
-                    const newTag = { ...tagNew, id: response.tag.id };
-                    addTag(newTag);
-                    alert("Tag added successfully :D");
-                    setShowAddForm(false);
-                } else {
-                    alert("Error adding tag. Please try again.");
-                }
+                await addTag(tagNew);
+                alert("Tag added successfully :D");
             }
+            setShowAddForm(false);
         } catch (error) {
             console.error("Error:", error);
             alert("Something went wrong!");
@@ -65,10 +52,12 @@ const AddTagModal = ({ setShowAddForm, tag, edit }: Props) => {
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[101]">
-            <div className="bg-black border-2 border-white p-6 max-w-md w-full mx-4">
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-xl font-bold">{edit ? "Edit Tag" : "Add New Tag"}</h3>
+        <>
+            <div className="fixed inset-0 bg-black opacity-25 z-[100]"></div>
+            <div className="fixed inset-0 flex items-center justify-center z-[101]">
+                <div className="bg-black border-2 opacity-100 border-white p-6 max-w-md w-full mx-4">
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-xl font-bold">{edit ? "Edit Tag" : "Add New Tag"}</h3>
                     <button 
                         onClick={() => setShowAddForm(false)} 
                         className="p-2 hover:bg-white hover:text-black transition"
@@ -128,6 +117,7 @@ const AddTagModal = ({ setShowAddForm, tag, edit }: Props) => {
                 </form>
             </div>
         </div>
+        </>
     );
 };
 

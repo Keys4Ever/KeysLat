@@ -13,8 +13,13 @@ const TagsSection = () => {
     const [edit, setEdit] = useState(false);
 
     const handleAddTag = () => {
-        setShowAddForm(true);
         setEdit(false);
+        setTagToEdit({
+            id: 0,
+            name: '',
+            description: ''
+        });
+        setShowAddForm(true);
     };
 
     const handleEditTag = (tag: Tag) => {
@@ -45,10 +50,11 @@ const TagsSection = () => {
                         <TagSkeleton bigTag />
                         <TagSkeleton bigTag />
                     </>
-                ) : tags.length === 0 ? (
+                ) : !tags || tags.length === 0 ? (
                     <p className="text-white">No tags found</p>
                 ) : (
                     tags.map((tag) => (
+                        
                         <div key={tag.id} className="flex-shrink-0">
                             <TagCard
                                 tag={tag}
@@ -62,7 +68,7 @@ const TagsSection = () => {
 
             <button
                 onClick={handleAddTag}
-                className="flex items-center gap-2 px-4 py-2 border border-white hover:bg-white hover:text-black transition"
+                className="flex items-center cursor-pointer gap-2 px-4 py-2 border border-white hover:bg-white hover:text-black transition"
             >
                 <Plus className="w-4 h-4" />
                 Add Tag

@@ -2,9 +2,13 @@ import { useState } from "react";
  ;
 import { SocialLogin } from "../social/SocialLogin";
 import { useAuth } from "../../context/AuthContext";
+import { AButton } from "../../shared/components/AButton";
+import { LogIn } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export const Register = () => {
     const { register } = useAuth();
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         username: "",
         email: "",
@@ -25,11 +29,17 @@ export const Register = () => {
             alert("Passwords do not match");
             return;
         }
-        await register(formData);
+        const response = await register(formData);
+        if(response.success) {
+            alert("Registration successful");
+            navigate('/dashboard');
+        } else {
+            alert("Registration failed");
+        }
     };
 
     return (
-        <div className="flex items-center justify-center h-screen bg-black">
+        <div className="flex flex-col flex-1 items-center justify-center h-screen bg-black">
             <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-6 border-2 border-white text-white w-80">
                 <input 
                     type="text" 
@@ -70,8 +80,12 @@ export const Register = () => {
                     Register
                 </button>
             </form>
+
+            <div className="flex flex-row">
+                <p>Already have an account? <AButton link="/login" icon={<LogIn />} label="Login now" /></p>
+            </div>
             
-            <SocialLogin />
+            <SocialLogin register />
         </div>
     );
 }

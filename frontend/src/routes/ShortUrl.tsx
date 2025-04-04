@@ -1,37 +1,43 @@
 import { useEffect } from 'react';
-import { redirect, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import httpClient from '../shared/utils/httpClient';
+import { ApiResponse } from '../shared/interfaces/Response';
+
+interface ShortUrlResponse extends ApiResponse{
+    payload:{
+        original_url: string
+    }
+}
 
 const ShortUrl = () => {
-    const { shortUrl } = useParams();
 
+    const params = useParams();
+    const shortUrl = params.shortUrl;    
+    console.log('useParams: ', params)
     useEffect(() => {
         const fetchUrl = async () => {
             try {
-                const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}api/url/${shortUrl}`, {
-                    method: 'GET',
-                });
+                const response = await httpClient.get<ShortUrlResponse>(`/url/${shortUrl}`);
 
-                if (!response.ok) {
+                if (!response.data.success) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
                 console.log('response:', response);
 
-                const data = await response.json();
+                if (response.data.payload.original_url) {
 
-                if (data && data.original_url) {
-
-                    window.location.href = data.original_url;
-                } else if (data && !data.original_url) {
-                    window.location.href = data;
+                    window.location.href = response.data.payload.original_url;
+                } else if (response.data.payload.original_url) {
+                    window.location.href = response.data.payload.original_url;
                 } else {
                     
-                    redirect('/404');
+                  //  redirect('/404');
                     console.error('La respuesta no contiene original_url.');
                 }
 
             } catch (error) {
-                window.location.href='/404';
+               // window.location.href='/404';
                 console.error('Error fetching the URL:', error);
             }
         };

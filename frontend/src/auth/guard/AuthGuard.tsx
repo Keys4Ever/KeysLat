@@ -10,10 +10,10 @@ export const AuthGuard = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const isValid = checkTokenExpiration();
     
-    if (!isValid && !auth.authenticated) {
+    if (!isValid && !auth.authenticated && window.location.pathname !== '/login') {
       navigate('/login');
     }
-  }, [auth, navigate]);
+  }, [navigate]);
 
   return auth.authenticated ? children : null;
 };

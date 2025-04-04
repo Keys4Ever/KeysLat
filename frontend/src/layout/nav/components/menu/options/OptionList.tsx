@@ -1,5 +1,6 @@
 import { LayoutDashboard, LogOut } from 'lucide-react';
 import Option from './Option.jsx';
+import { useAuth } from '../../../../../context/AuthContext.js';
 
 interface OptionListProps {
     toggleDropdown?: () => void;
@@ -7,6 +8,7 @@ interface OptionListProps {
 }
 
 const OptionList = ({toggleDropdown, isMobile}: OptionListProps) => {
+    const { logout } = useAuth();
     return (
         <ul 
             aria-labelledby="user-menu-button" 
@@ -23,9 +25,7 @@ const OptionList = ({toggleDropdown, isMobile}: OptionListProps) => {
                 icon={<LogOut className="w-5 h-5 sm:w-6 sm:h-6" />} 
                 label="Logout" 
                 className={isMobile ? 'border-b-2 border-white' : ''}
-                moveTo={`${import.meta.env.VITE_BACKEND_URL}logout`}
-                action={toggleDropdown}
-                isExternal
+                action={logout}
             />
         </ul>
     );

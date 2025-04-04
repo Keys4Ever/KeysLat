@@ -66,7 +66,7 @@ const LookURLSection = () => {
                         <button 
                             type="submit"
                             disabled={!shortUrl?.trim()}
-                            className="flex items-center justify-center px-4 sm:px-6 py-3 bg-white text-black font-bold hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                            className="flex items-center cursor-pointer justify-center px-4 sm:px-6 py-3 bg-white text-black font-bold hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
                         >
                             <span className="hidden sm:inline">Check URL</span>
                             <ArrowRight className="w-5 h-5 sm:ml-2" />

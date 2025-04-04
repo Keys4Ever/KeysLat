@@ -2,17 +2,15 @@ import { useState } from 'react';
 import { Copy, Edit, Trash2, QrCode, Check } from 'lucide-react';
 import QRCode from 'qrcode';
 import useUrlStore from '../../store/useUrlStore';
-import UrlService, { Url } from '../../shared/services/UrlService';
 import { Tag } from '../../shared/interfaces/Tag';
 import AddUrlModal from './AddUrlModal';
 
-interface Props{
-    item: Url;
+interface Props {
+  item: any; // Puedes tipar con Url si lo prefieres
 }
 
 const UrlCard = ({ item }: Props) => {
-  const shortUrl = "https://keys.lat/" + item.shortUrl;
-
+  const shortUrl = "https://keys.lat/" + item.short_url;
   const [showUrlForm, setShowUrlForm] = useState(false);
   const [copying, setCopying] = useState(false);
   const [qrCopied, setQrCopied] = useState(false);
@@ -46,8 +44,7 @@ const UrlCard = ({ item }: Props) => {
   const handleDeleteUrl = async () => {
     if (window.confirm('¿Estás seguro de que quieres eliminar esta URL?')) {
       try {
-        await UrlService.deleteUrl(item.id);
-        deleteUrl(item.id);
+        await deleteUrl(item.id);
       } catch (error) {
         console.error('Error al eliminar la URL:', error);
         alert('Error deleting URL. Try again later. \nIf the problem persists, contact the administrator.');
@@ -58,11 +55,7 @@ const UrlCard = ({ item }: Props) => {
   return (
     <>
       {showUrlForm && (
-        <AddUrlModal
-          setShowUrlForm={setShowUrlForm}
-          edit={true}
-          item={item}
-        />
+        <AddUrlModal setShowUrlForm={setShowUrlForm} edit={true} item={item} />
       )}
       <div className="p-4 border-2 border-white">
         <div className="flex flex-col sm:flex-row justify-between items-start mb-2 space-y-2 sm:space-y-0">
@@ -72,20 +65,20 @@ const UrlCard = ({ item }: Props) => {
               <button
                 className="p-1 hover:bg-white hover:text-black transition rounded"
                 onClick={handleCopyUrl}
-                title='Copy short url'
+                title="Copy short url"
               >
                 {copying ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               </button>
               <button
                 className="p-1 hover:bg-white hover:text-black transition rounded"
                 onClick={copyQrCode}
-                title='Copy short url as QRCode'
+                title="Copy short url as QRCode"
               >
                 {qrCopied ? <Check className="w-4 h-4" /> : <QrCode className="w-4 h-4" />}
               </button>
             </div>
             <p className="text-gray-400 text-sm break-all max-w-full">
-              {item.originalUrl || "URL completa no disponible"}
+              {item.original_url || "URL completa no disponible"}
             </p>
             {item.description && (
               <p className="text-sm text-gray-400 mt-1 max-w-full">{item.description}</p>
@@ -94,32 +87,25 @@ const UrlCard = ({ item }: Props) => {
           <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 w-full sm:w-auto">
             <div className="text-right sm:text-right">
               <p className="font-bold truncate max-w-full">
-                {item.clics !== undefined ? `${item.clics} clicks` : "Clicks not available"}
+                {item.stats && typeof item.stats.clicks === 'number' ? `${item.stats.clicks} clicks` : "Clicks not available"}
               </p>
-              <p className="text-sm text-gray-400 truncate max-w-full">{item.created_at || "Date not available, refresh the page."}</p>
+              <p className="text-sm text-gray-400 truncate max-w-full">
+                Created: {new Date(item.created_at).toLocaleString() || "Date not available, refresh the page."}
+              </p>
             </div>
             <div className="flex items-center gap-2">
-              <button 
-                className="p-2 hover:bg-white hover:text-black transition rounded" 
-                onClick={handleEditUrl}
-              >
+              <button className="p-2 hover:bg-white hover:text-black cursor-pointer transition rounded" onClick={handleEditUrl}>
                 <Edit className="w-5 h-5" />
               </button>
-              <button 
-                className="p-2 hover:bg-white hover:text-black transition rounded"
-                onClick={handleDeleteUrl}
-              >
+              <button className="p-2 hover:bg-white hover:text-black cursor-pointer transition rounded" onClick={handleDeleteUrl}>
                 <Trash2 className="w-5 h-5" />
               </button>
             </div>
           </div>
         </div>
         <div className="flex flex-wrap gap-2 mt-2">
-          {item.tags.map((tag: Tag) => (
-            <span 
-              key={tag.id} 
-              className="px-2 py-1 border border-gray-400 text-sm text-gray-400 truncate max-w-full"
-            >
+          {item.tags && item.tags.length > 0 && item.tags.map((tag: Tag) => (
+            <span key={tag.id} className="px-2 py-1 border border-gray-400 text-sm text-gray-400 truncate max-w-full">
               {tag.name}
             </span>
           ))}

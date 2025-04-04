@@ -3,7 +3,7 @@ import { Tag } from "../interfaces/Tag";
 import httpClient from "../utils/httpClient";
 
 interface GetTagsResponse extends ApiResponse {
-    tags: Tag[];
+    payload: Tag[];
 }
 
 interface GetTagResponse extends ApiResponse {
@@ -11,7 +11,7 @@ interface GetTagResponse extends ApiResponse {
 }
 
 interface CreateUpdateTagResponse extends ApiResponse {
-    tag: Tag;
+    payload: Tag;
 }
 
 interface DeleteTagResponse extends ApiResponse {
@@ -25,6 +25,7 @@ const createTag = async (tag: Tag): Promise<CreateUpdateTagResponse> => {
 
 const getTags = async (): Promise<GetTagsResponse> => {
     const response = await httpClient.get<GetTagsResponse>('/tags');
+    console.log('response: ', response.data);
     return response.data;
 };
 

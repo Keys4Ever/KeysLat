@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 interface OptionProps {
     icon: JSX.Element;
     label: string;
-    moveTo: string;
+    moveTo?: string;
     hasBorder?: boolean;
     isExternal?: boolean;
     action?: () => void;
@@ -18,6 +18,7 @@ const Option = ({ icon, label, moveTo, hasBorder = false, isExternal = false, ac
 
         if(action) action();
 
+        if(!moveTo) return;
         if (isExternal) {
             window.location.href = moveTo;
         } else {

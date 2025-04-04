@@ -5,6 +5,7 @@ import { ShortUrlDisplay } from './components/ShortUrlDisplay';
 import SecretKeyDisplay from './components/SecretKeyDisplay';
 import secretService from '../../shared/services/QuickShort';
 import UrlService from '../../shared/services/UrlService';
+import useUrlStore from '../../store/useUrlStore';
 
 const QuickShorten = () => {
   const { auth, loading } = useAuth();
@@ -12,6 +13,9 @@ const QuickShorten = () => {
   const [secretKey, setSecretKey] = useState<string>('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Importamos las funciones del store que necesitamos
+  const { addUrl } = useUrlStore();
 
   const handleShortenUrl = async (url: string) => {
     setError('');
@@ -20,24 +24,39 @@ const QuickShorten = () => {
   
     try {
       const userId = auth.authenticated ? auth.data?.user_id : null;
-      const response = userId ? await UrlService.createShortUrl(url) : await secretService.quickShort(url);
-  
-      console.log(response.data);
-  
-      if (!response.data?.success && !auth.authenticated) {
-        throw new Error(response.data?.error || 'Error shortening URL');
-      }
-  
-      const generatedShortUrl = `keys.lat/${response.data.shortUrl}`;
-      setShortUrl(generatedShortUrl);
-  
-      if (!auth.authenticated) {
-        if ('secretKey' in response.data) {
-          setSecretKey(response.data.secretKey);
+      
+      if (userId) {
+        // Usuario autenticado - usar el servicio de URL y actualizar el store
+        const response = await UrlService.createShortUrl('', url);
+        
+        if (!response.success) {
+          throw new Error(response.error || 'Error shortening URL');
         }
+
+        console.log('Sonsa: ',response)
+        
+        // Añadir la URL al store
+        await addUrl(response.payload.short_url, url);
+        
+        const generatedShortUrl = `keys.lat/${response.payload.short_url}`;
+        setShortUrl(generatedShortUrl);
+      } else {
+        // Usuario no autenticado - usar el servicio rápido
+        const response = await secretService.quickShort(url);
+        console.log('Sonsa2: ', response)
+        if (!response.data?.success) {
+          throw new Error(response.data?.error || 'Error shortening URL');
+        }
+        
+        const generatedShortUrl = `keys.lat/${response.data.payload.short_url}`;
+        setShortUrl(generatedShortUrl);
+        
+        // Guardar la clave secreta para usuarios no autenticados
+        setSecretKey(response.data.payload.secret_key);
       }
   
-      await navigator.clipboard.writeText(generatedShortUrl);
+      // Copiar al portapapeles automáticamente
+      await navigator.clipboard.writeText(shortUrl);
     } catch (err: any) {
       const errorMessage = err.response?.data?.error || err.message;
       setError(errorMessage);
@@ -54,7 +73,6 @@ const QuickShorten = () => {
           <br />
           with our service.
         </h2>
-
 
         <UrlInputForm
           isLoading={isLoading}

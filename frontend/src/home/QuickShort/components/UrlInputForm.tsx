@@ -31,7 +31,7 @@ const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         />
         <button
           type="submit"
-          className="flex items-center justify-center w-full sm:w-auto px-4 sm:px-6 py-3 bg-white text-black font-bold hover:bg-gray-200 transition"
+          className="flex items-center cursor-pointer justify-center w-full sm:w-auto px-4 sm:px-6 py-3 bg-white text-black font-bold hover:bg-gray-200 transition"
           disabled={isLoading}
         >
           <span className="hidden sm:inline">

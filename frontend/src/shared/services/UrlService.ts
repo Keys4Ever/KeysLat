@@ -4,20 +4,30 @@ import httpClient from "../utils/httpClient";
 
 export interface Url {
     id: number;
-    shortUrl: string;
-    originalUrl: string;
+    short_url: string;
+    original_url: string;
     tags: Tag[];
     description: string;
-    clics: number;
+    stats: stats;
     created_at: string;
 }
 
+interface stats{
+    clicks: number;
+    access_date: string;
+    url_id: string;
+}
+
 interface CreateShortUrlResponse extends ApiResponse {
-    id: number;
-    shortUrl: string;
-    originalUrl: string;
+    payload:{
+        id: number;
+    short_url: string;
+    original_url: string;
     tags: number[];
+    stats: stats;
     description: string;
+    created_at: string;
+    }
 }
 
 interface GetUrlResponse extends ApiResponse {
@@ -25,22 +35,24 @@ interface GetUrlResponse extends ApiResponse {
 }
 
 interface GetAllUrlsResponse extends ApiResponse {
-    urls: Url[];
+    payload: Url[];
 }
-
+interface UpdateUrlResponse extends ApiResponse {
+    payload: Url;
+}
 interface DeleteUrlResponse extends ApiResponse {
     message: string;
 }
 
 const createShortUrl = async (
-    shortUrl: string,
-    longUrl: string,
+    short_url: string,
+    original_url: string,
     tags?: number[],
     description?: string
 ): Promise<CreateShortUrlResponse> => {
     const response = await httpClient.post<CreateShortUrlResponse>("/url/create", {
-        shortUrl,
-        longUrl,
+        original_url,
+        short_url,
         tags,
         description,
     });
@@ -73,15 +85,16 @@ const updateUrl = async (
     newLongUrl: string,
     newTags: number[],
     newDescription: string
-): Promise<GetUrlResponse> => {
-    const response = await httpClient.put<GetUrlResponse>(`/url/${urlId}`, {
-        newShortUrl,
-        newLongUrl,
-        newTags,
-        newDescription,
+  ): Promise<GetUrlResponse> => {
+    const response = await httpClient.put<UpdateUrlResponse>(`/url/${urlId}`, {
+      newShortUrl,
+      newLongUrl,
+      newTags,
+      newDescription,
     });
-    return response.data;
-};
+    // Mapeamos payload a url para cumplir con GetUrlResponse
+    return { ...response.data, url: response.data.payload };
+  };
 
 const UrlService = {
     createShortUrl,

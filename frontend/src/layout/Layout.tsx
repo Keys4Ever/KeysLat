@@ -1,4 +1,4 @@
-import AuthProvider from '../context/AuthContext.js';
+import { AuthProvider } from '../context/AuthContext.js';
 import { Footer } from './footer/Footer.js';
 import { Nav } from './nav/Nav.js';
 
