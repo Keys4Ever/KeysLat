@@ -182,7 +182,7 @@ export class UrlController {
                 );
                 return;
             }
-
+            
             res.status(HTTP_STATUS.OK).json(
                 apiResponse({
                     success: true,

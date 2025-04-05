@@ -6,6 +6,7 @@ import HTTP_STATUS from "../../constants/HttpStatus";
 import type { Tag } from "../tag/entity";
 import { TagService } from "../tag/service";
 import { StatsService } from "../stats/service";
+import { RedisService } from "../redis/service";
 
 export class UrlService {
     static async createUrl(data: {
@@ -106,6 +107,9 @@ export class UrlService {
         new_description?: string;
         new_tags?: Tag[];
     }): Promise<Url> {
+
+        console.log('URL UPDATING: ', urlId);
+
         // Verificar si la URL existe
         const urlResult = await query("SELECT * FROM urls WHERE id = $1", [urlId]);
         if (urlResult.rows.length === 0) {
@@ -168,9 +172,16 @@ export class UrlService {
             ...updatedUrlResult.rows[0],
             tags: updatedUrlResult.rows[0].tags
         }
+
+        let pastUrlInRedis = await RedisService.getOriginalUrl(finalUrl.short_url);
+            if (pastUrlInRedis) {
+                await RedisService.deleteUrl(finalUrl.short_url);
+            }
         
         const stats = await StatsService.getUrlStats(urlId);
         finalUrl.stats = stats;
+
+        console.log('pastUrlInRedis: ', pastUrlInRedis);
 
         return finalUrl;
     }

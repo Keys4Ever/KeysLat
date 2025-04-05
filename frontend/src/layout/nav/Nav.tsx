@@ -12,7 +12,7 @@ export const Nav = () => {
 
   useEffect(() => {
     setUrl(location.pathname);
-  }, [location]);
+  }, [location.pathname]);
 
   useEffect(() => {
   }, [auth.data?.user_id]);

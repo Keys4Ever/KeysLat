@@ -9,6 +9,9 @@ import { useNavigate } from "react-router-dom";
 export const Register = () => {
     const { register } = useAuth();
     const navigate = useNavigate();
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
+
     const [formData, setFormData] = useState({
         username: "",
         email: "",
@@ -25,16 +28,21 @@ export const Register = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError("");
+        setSuccess("");
+    
         if (formData.password !== formData.confirmPassword) {
-            alert("Passwords do not match");
+            setError("Passwords do not match");
             return;
         }
+    
         const response = await register(formData);
-        if(response.success) {
-            alert("Registration successful");
-            navigate('/dashboard');
+        
+        if (response.success) {
+            setSuccess("Registration successful. Redirecting...");
+            setTimeout(() => navigate('/dashboard'), 1500);
         } else {
-            alert("Registration failed");
+            setError(response.error || "Registration failed");
         }
     };
 
@@ -80,6 +88,17 @@ export const Register = () => {
                     Register
                 </button>
             </form>
+
+            {error && (
+                <div className="mb-4 mt-2 text-red-500 font-mono border border-red-500 p-2 bg-red-950 w-80 text-center">
+                    {error}
+                </div>
+            )}
+            {success && (
+                <div className="mb-4 mt-2 text-green-500 font-mono border border-green-500 p-2 bg-green-950 w-80 text-center">
+                    {success}
+                </div>
+            )}
 
             <div className="flex flex-row">
                 <p>Already have an account? <AButton link="/login" icon={<LogIn />} label="Login now" /></p>

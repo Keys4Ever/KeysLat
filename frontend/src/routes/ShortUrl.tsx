@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { redirect, useParams } from 'react-router-dom';
 import httpClient from '../shared/utils/httpClient';
 import { ApiResponse } from '../shared/interfaces/Response';
 
@@ -32,12 +32,12 @@ const ShortUrl = () => {
                     window.location.href = response.data.payload.original_url;
                 } else {
                     
-                  //  redirect('/404');
+                    redirect('/404');
                     console.error('La respuesta no contiene original_url.');
                 }
 
             } catch (error) {
-               // window.location.href='/404';
+                window.location.href='/404';
                 console.error('Error fetching the URL:', error);
             }
         };

@@ -28,22 +28,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       let token: string | null | undefined = localStorage.getItem("auth_token");
   
-      console.log("Token de localStorage::", token);
   
       if (!token) {
-        console.log("Buscando en cookies...");
         token = getCookie("auth_token");
-        console.log("Token de cookies::", token);
   
         if (token !== null && token !== undefined) {
           localStorage.setItem("auth_token", token);
         }
       }
   
-      console.log("Token final::", token);
   
       if (token && !checkTokenExpiration(token)) {
-        console.log("Token expirado, cerrando sesión.");
         logout();
         return;
       }
@@ -51,9 +46,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (token) {
         const response = await httpClient.get<Response>("/auth/profile");
         const decoded = jwtDecode<DecodedToken>(token);
-        console.log('HAY TOKEEEEEEEEEN GOOOOOOOOOOOOOOOOOOD');
         console.log('Decoded token: ', decoded);
-        console.log('Reponse: ', response)
         setAuth({
           authenticated: true,
           data: {
@@ -76,16 +69,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (formData: FormData) => {
     try {
       setLoading(true);
-      const response = await httpClient.post<{ payload: { message: string; token: string; user: UserData } }>(
-        '/auth/login',
-        formData,
-        { withCredentials: true }
-      );
-
+  
+      const response = await httpClient.post<{
+        payload: {
+          message: string;
+          token: string;
+          user: UserData;
+          status?: number;
+          details?: string;
+        };
+      }>('/auth/login', formData, { withCredentials: true });
+  
       const token = response.data.payload.token;
-
-      if (token !== null && token !== undefined) {
-        localStorage.setItem("auth_token", token);
+  
+      if (token) {
+        localStorage.setItem('auth_token', token);
+  
         setAuth({
           authenticated: true,
           data: {
@@ -95,20 +94,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             profile_picture: response.data.payload.user.profile_picture,
           },
         });
+  
         navigate('/dashboard');
-        return { success: true };
+        return { success: true, details: response.data.payload.details, status: response.data.payload.status };
       }
-
-      throw new Error('No se encontró el token en las cookies.');
+  
+      throw new Error('No se encontró el token.');
     } catch (error: any) {
+      const defaultMessage = 'Error de autenticación';
+      const responsePayload = error?.response?.data?.payload;
+  
+      const errorMessage =
+        responsePayload?.description || error?.response?.data?.message || defaultMessage;
+  
+      const errorDetails = responsePayload?.details || null;
+      const statusCode = responsePayload?.status || error?.response?.status || null;
+  
       return {
         success: false,
-        error: error.response?.data?.message || 'Error de autenticación',
+        error: errorMessage,
+        details: errorDetails,
+        status: statusCode,
       };
     } finally {
       setLoading(false);
     }
   };
+  
 
   const logout = async () => {
     localStorage.removeItem('auth_token');
@@ -124,14 +136,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         formData
       );
   
-      console.log(response);
-      console.log(response.data.payload)
       const { token, user } = response.data.payload;
-      console.log("TOKEN DE REGISTRO: ", token)
       if (token !== null && token !== undefined) {
-        console.log('Token guardado: ', token)
         localStorage.setItem("auth_token", token);
-        console.log('Token guardado: ', token)
         const decoded = jwtDecode<DecodedToken>(token);
   
         setAuth({

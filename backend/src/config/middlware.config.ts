@@ -4,10 +4,11 @@ import cookieParser from "cookie-parser";
 import path from 'path'
 
 export default class MiddlwareConfig {
-    static config(app: express.Application): void {
-        app.use(
+  static config(app: express.Application): void {
+    const origins = ['http://localhost:5173', '3.144.116.111']  
+    app.use(
             cors({
-              origin: "http://localhost:5173",
+              origin: origins,
               methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
               credentials: true,
               allowedHeaders: [

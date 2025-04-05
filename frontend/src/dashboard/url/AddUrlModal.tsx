@@ -15,7 +15,7 @@ const AddUrlModal = ({ setShowUrlForm, edit = false, item = null }: Props) => {
   const [shortUrl, setShortUrl] = useState('');
   const [longUrl, setLongUrl] = useState('');
   const [description, setDescription] = useState('');
-  const [selectedTags, setSelectedTags] = useState<Array<Tag>>([]);
+  const [_selectedTags, setSelectedTags] = useState<Array<Tag>>([]);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [alerta, setAlerta] = useState('');

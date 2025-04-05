@@ -6,6 +6,7 @@ import { LogIn } from "lucide-react";
 
 export const Login = () => {
     const { login } = useAuth();
+    const [error, setError] = useState("");
     const [formData, setFormData] = useState({
         username: "",
         email: "",
@@ -21,7 +22,13 @@ export const Login = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        await login(formData);
+        setError(""); // limpia errores anteriores
+    
+        const response = await login(formData);
+    
+        if (!response.success) {
+            setError("Invalid credentials.");
+        }
     };
 
     return (
@@ -50,6 +57,11 @@ export const Login = () => {
                     Login
                 </button>
             </form>
+            {error && (
+    <div className="mt-2 mb-4 text-red-500 font-mono border border-red-500 p-2 bg-red-950 w-80 text-center">
+        {error}
+    </div>
+)}
             <div className="flex flex-row">
                 <p>Don't have an account? <AButton link="/register" icon={<LogIn />} label="Register now" /></p>
             </div>

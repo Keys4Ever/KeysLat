@@ -64,8 +64,8 @@ const SearchAndActionBar = () => {
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder={`Buscar por ${
-            searchBy !== "tags" ? `${searchBy}...` : "etiquetas..."
+          placeholder={`Search by ${
+            searchBy !== "tags" ? `${searchBy}...` : "tags..."
           }`}
           className="w-full pl-10 pr-32 py-2 bg-transparent border-2 border-white focus:outline-none"
         />
@@ -89,7 +89,7 @@ const SearchAndActionBar = () => {
           onClick={() => setShowUrlForm(true)}
         >
           <Plus className="w-5 h-5" />
-          <span>Nueva URL</span>
+          <span>New URL</span>
         </button>
 
         <button
@@ -97,7 +97,7 @@ const SearchAndActionBar = () => {
           onClick={() => setShowAddSecret(true)}
         >
           <Lock className="w-5 h-5" />
-          <span>Usar secreto</span>
+          <span>Use secret</span>
         </button>
       </div>
     </div>

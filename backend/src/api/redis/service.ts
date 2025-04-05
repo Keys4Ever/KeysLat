@@ -33,4 +33,13 @@ export class RedisService {
             throw new HttpError(error.message, "REDIS_ERROR", HTTP_STATUS.SERVER_ERROR);
         }
     }
+
+    static async deleteUrl(key: string): Promise<boolean> {
+        try {
+            const result = await redisClient.del(key);
+            return result > 0; // Devuelve true si se eliminó al menos una clave
+        } catch (error: any) {
+            throw new HttpError(error.message, "REDIS_ERROR", HTTP_STATUS.SERVER_ERROR);
+        }
+    }
 }
